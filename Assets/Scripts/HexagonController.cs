@@ -9,7 +9,9 @@ public class HexagonController : MonoBehaviour
     public float hexWidth = 2.0f;
     public float channelWidth = 0.5f;
 
-    public float level = 2.0f;
+    public bool[] doors = new bool[6];
+    public float level = 0.0f;
+    
 
 	// Use this for initialization
 	void Start ()
@@ -40,21 +42,35 @@ public class HexagonController : MonoBehaviour
 
         for (int i = 0; i < 6; ++i)
         {
-            float angleStart = angleStep * i;
-            float angleStop = angleStep * (i + 1);
-            float centerRadius = (level * hexWidth) - (hexWidth * 0.5f);
-            float upperRadius = centerRadius + hexWidth * 0.5f - channelWidth * 0.5f;
-            float lowerRadius = centerRadius - hexWidth * 0.5f + channelWidth * 0.5f;
+            float angleStart = angleStep * i + Mathf.PI * 0.5f;
+            float angleStop = angleStep * (i + 1) + Mathf.PI * 0.5f;
+            float baseRadius = (hexWidth + channelWidth * 0.5f) / Mathf.Sin(Mathf.PI / 6) + channelWidth;
+            float lowerRadius = baseRadius + level * (hexWidth + channelWidth);
+            float upperRadius = lowerRadius + hexWidth;
 
             float cosAngleStart = Mathf.Cos(angleStart);
             float sinAngleStart = Mathf.Sin(angleStart);
             float cosAngleStop = Mathf.Cos(angleStop);
             float sinAngleStop = Mathf.Sin(angleStop);
 
-            m_vertices[i * 4 + 0] = new Vector3(cosAngleStart * upperRadius, sinAngleStart * upperRadius, 0.0f);
-            m_vertices[i * 4 + 1] = new Vector3(cosAngleStart * lowerRadius, sinAngleStart * lowerRadius, 0.0f);
-            m_vertices[i * 4 + 2] = new Vector3(cosAngleStop * lowerRadius, sinAngleStop * lowerRadius, 0.0f);
-            m_vertices[i * 4 + 3] = new Vector3(cosAngleStop * upperRadius, sinAngleStop * upperRadius, 0.0f);
+            Vector2 startChannelOffset = new Vector2();
+            Vector2 stopChannelOffset = new Vector2();
+
+            if (doors[i])
+            {
+                float angle = angleStart + Mathf.PI * 2.0f / 3.0f;
+                startChannelOffset = new Vector2(Mathf.Cos(angle) * channelWidth * 0.5f, Mathf.Sin(angle) * channelWidth * 0.5f);
+            }
+            if (doors[(i+1) % 6])
+            {
+                float angle = angleStop - Mathf.PI * 2.0f / 3.0f;
+                stopChannelOffset = new Vector2(Mathf.Cos(angle) * channelWidth * 0.5f, Mathf.Sin(angle) * channelWidth * 0.5f);
+            }
+
+            m_vertices[i * 4 + 0] = new Vector3(cosAngleStart * upperRadius + startChannelOffset.x, sinAngleStart * upperRadius + startChannelOffset.y, 0.0f);
+            m_vertices[i * 4 + 1] = new Vector3(cosAngleStart * lowerRadius + startChannelOffset.x, sinAngleStart * lowerRadius + startChannelOffset.y, 0.0f);
+            m_vertices[i * 4 + 2] = new Vector3(cosAngleStop * lowerRadius + stopChannelOffset.x, sinAngleStop * lowerRadius + stopChannelOffset.y, 0.0f);
+            m_vertices[i * 4 + 3] = new Vector3(cosAngleStop * upperRadius + stopChannelOffset.x, sinAngleStop * upperRadius + stopChannelOffset.y, 0.0f);
         }
         m_mesh.vertices = m_vertices;
     }
