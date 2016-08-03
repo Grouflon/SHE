@@ -41,15 +41,13 @@ public class CentralHexagonController : MonoBehaviour
 	void Update ()
     {
         float angleStep = Mathf.PI * 2.0f / 6.0f;
-        float radius = (hexagonControllerPrefab.hexWidth + hexagonControllerPrefab.channelWidth * 0.5f) / Mathf.Sin(Mathf.PI / 6);
+        float radius = hexagonControllerPrefab.GetBaseRadius();
 
         for (int i = 0; i < 6; ++i)
         {
             float angle = i * angleStep + angleStep * 0.5f;
-
             m_vertices[i * 2 + 0] = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0.0f);
             m_vertices[i * 2 + 1] = new Vector3(m_vertices[i * 2 + 0].x, m_vertices[i * 2 + 0].y - Mathf.Sign(m_vertices[i * 2 + 0].y) * (hexagonControllerPrefab.hexWidth), 0.0f);
-           // m_vertices[i * 2 + 1] = new Vector3(m_vertices[i * 2 + 0].x, Mathf.Sign(m_vertices[i * 2 + 0].y) * 0.2f, 0.0f);
         }
         m_mesh.vertices = m_vertices;
     }

@@ -44,7 +44,7 @@ public class HexagonController : MonoBehaviour
         {
             float angleStart = angleStep * i + Mathf.PI * 0.5f;
             float angleStop = angleStep * (i + 1) + Mathf.PI * 0.5f;
-            float baseRadius = (hexWidth + channelWidth * 0.5f) / Mathf.Sin(Mathf.PI / 6) + channelWidth;
+            float baseRadius = GetBaseRadius() + channelWidth;
             float lowerRadius = baseRadius + level * (hexWidth + channelWidth);
             float upperRadius = lowerRadius + hexWidth;
 
@@ -73,6 +73,11 @@ public class HexagonController : MonoBehaviour
             m_vertices[i * 4 + 3] = new Vector3(cosAngleStop * upperRadius + stopChannelOffset.x, sinAngleStop * upperRadius + stopChannelOffset.y, 0.0f);
         }
         m_mesh.vertices = m_vertices;
+    }
+
+    public float GetBaseRadius()
+    {
+        return (hexWidth + channelWidth * 0.5f) / Mathf.Sin(Mathf.PI / 6);
     }
 
     private Mesh m_mesh;
