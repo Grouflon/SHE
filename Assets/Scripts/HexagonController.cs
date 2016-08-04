@@ -9,7 +9,7 @@ public class HexagonController : MonoBehaviour
     public float hexWidth = 2.0f;
     public float channelWidth = 0.5f;
 
-    public bool[] doors = new bool[6];
+    public Level doors;
     public float level = 0.0f;
     
 
@@ -38,6 +38,12 @@ public class HexagonController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        if (m_mesh == null)
+        {
+            DestroyImmediate(gameObject);
+            return;
+        }
+
         float angleStep = Mathf.PI * 2.0f / 6.0f;
 
         for (int i = 0; i < 6; ++i)
@@ -56,12 +62,12 @@ public class HexagonController : MonoBehaviour
             Vector2 startChannelOffset = new Vector2();
             Vector2 stopChannelOffset = new Vector2();
 
-            if (doors[i])
+            if (doors.GetDoor(i))
             {
                 float angle = angleStart + Mathf.PI * 2.0f / 3.0f;
                 startChannelOffset = new Vector2(Mathf.Cos(angle) * channelWidth * 0.5f, Mathf.Sin(angle) * channelWidth * 0.5f);
             }
-            if (doors[(i+1) % 6])
+            if (doors.GetDoor(i + 1))
             {
                 float angle = angleStop - Mathf.PI * 2.0f / 3.0f;
                 stopChannelOffset = new Vector2(Mathf.Cos(angle) * channelWidth * 0.5f, Mathf.Sin(angle) * channelWidth * 0.5f);
