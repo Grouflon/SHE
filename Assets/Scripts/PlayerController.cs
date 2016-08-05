@@ -8,8 +8,10 @@ public class PlayerController : MonoBehaviour
     public HexagonController hexagonControllerPrefab;
     public int offset = 0;
     public float level = 1.0f;
+    public float z = -0.06f;
 
     public float transitionTime = 1.0f;
+    public float horizontalTransitionTime = 0.1f;
 
     public int GetPosition()
     {
@@ -51,14 +53,14 @@ public class PlayerController : MonoBehaviour
         int[] indices = new int[18];
         Vector3[] vertices = new Vector3[7];
 
-        vertices[0] = new Vector3();
+        vertices[0] = new Vector3(0.0f, 0.0f, 0.0f);
 
         float angleStep = Mathf.PI * 2.0f / 6.0f;
         for (int i = 0; i < 6; ++i)
         {
             float angle = Mathf.PI * 0.5f + i * angleStep;
 
-            vertices[i + 1] = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), -0.2f);
+            vertices[i + 1] = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0.0f);
 
             indices[i * 3 + 0] = 0;
             indices[i * 3 + 1] = (i + 2);
@@ -73,6 +75,7 @@ public class PlayerController : MonoBehaviour
 
         m_token = GameObject.Instantiate(m_tokenTemplate);
         m_tokenPosition = offset;
+        m_tokenWantedPosition = offset;
 
         m_tokenTemplate.hideFlags = HideFlags.HideInHierarchy;
         m_tokenTemplate.SetActive(false);
@@ -81,6 +84,15 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        if (m_transitionTimer > horizontalTransitionTime)
+        {
+            m_transitionTimer = 0.0f;
+
+            int delta = m_tokenWantedPosition - m_tokenPosition;
+            int increment = (int)(Mathf.Abs(delta) > 3 ? Mathf.Sign(-delta) : Mathf.Sign(delta));
+            m_tokenPosition = (m_tokenPosition + 6 + increment) % 6;
+        }
+
         if (m_stateTimer > transitionTime)
         {
             if (m_state == State.Advancing)
@@ -95,11 +107,10 @@ public class PlayerController : MonoBehaviour
 
         if (m_state == State.Free)
         {
-            float inputAngle = 0.0f;
-            if (input.GetAngle(ref inputAngle))
+            int position = 0;
+            if (input.GetPosition(ref position))
             {
-                inputAngle += Mathf.PI * 2.0f / 6.0f * (float)offset;
-                m_tokenPosition = (int)Mathf.Round(((inputAngle - Mathf.PI * 0.5f) % (Mathf.PI * 2.0f)) / (Mathf.PI * 2.0f / 6.0f));
+                m_tokenWantedPosition = (position + offset) % 6;
             }
         }
         else
@@ -125,8 +136,27 @@ public class PlayerController : MonoBehaviour
         }
 
         float radius = hexagonControllerPrefab.GetBaseRadius() + hexagonControllerPrefab.channelWidth * 0.5f + level * (hexagonControllerPrefab.hexWidth + hexagonControllerPrefab.channelWidth);
-        float angle = (float)m_tokenPosition * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
-        m_token.transform.position = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0.0f);
+
+        if (m_tokenPosition == m_tokenWantedPosition)
+        {
+            float angle = (float)m_tokenPosition * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
+            m_token.transform.position = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, z);
+        }
+        else
+        {
+            int delta = m_tokenWantedPosition - m_tokenPosition;
+            int increment = (int)(Mathf.Abs(delta) > 3 ? Mathf.Sign(-delta) : Mathf.Sign(delta));
+
+            float startAngle = (float)m_tokenPosition * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
+            Vector3 startPosition = new Vector3(Mathf.Cos(startAngle) * radius, Mathf.Sin(startAngle) * radius, z);
+
+            float EndAngle = (float)(m_tokenPosition + increment)  * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
+            Vector3 endPosition = new Vector3(Mathf.Cos(EndAngle) * radius, Mathf.Sin(EndAngle) * radius, z);
+
+            m_token.transform.position = Vector3.Lerp(startPosition, endPosition, m_transitionTimer / horizontalTransitionTime);
+
+            m_transitionTimer += Time.deltaTime;
+        }
     }
 
     enum State
@@ -137,7 +167,10 @@ public class PlayerController : MonoBehaviour
         Free
     }
 
+    private int m_tokenWantedPosition = 0;
     private int m_tokenPosition = 0;
+    private float m_transitionTimer = 0.0f;
+
     private GameObject m_token;
     private GameObject m_tokenTemplate;
     private State m_state = State.Free;

@@ -69,7 +69,7 @@ public class LevelController : MonoBehaviour {
         if (!Application.isPlaying)
             return;
 
-        if (input.NextLevel())
+        /*if (input.NextLevel())
         {
             ++m_wantedLevel;
         }
@@ -77,7 +77,7 @@ public class LevelController : MonoBehaviour {
         if (input.PrevLevel())
         {
             --m_wantedLevel;
-        }
+        }*/
 
         if (m_wantedLevel != m_currentLevel)
         {

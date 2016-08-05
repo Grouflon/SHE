@@ -4,19 +4,20 @@ using System;
 
 public class GamepadController : InputController
 {
-    public override bool GetAngle(ref float _angle)
+    public override bool GetPosition(ref int _angle)
     {
-        Vector2 direction = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        return false;
+        /*Vector2 direction = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
         if (direction.magnitude < 0.4f)
             return false;
 
         direction.Normalize();
         _angle = Mathf.Atan2(direction.y, direction.x);
-        return true;
+        return true;*/
     }
 
-    public override bool NextLevel()
+    /*public override bool NextLevel()
     {
         return Input.GetButtonDown("RS");
     }
@@ -24,5 +25,5 @@ public class GamepadController : InputController
     public override bool PrevLevel()
     {
         return Input.GetButtonDown("LS");
-    }
+    }*/
 }

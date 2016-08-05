@@ -7,6 +7,7 @@ using System.Collections;
 public class CentralHexagonController : MonoBehaviour
 {
     public HexagonController hexagonControllerPrefab;
+    public Material maskMaterial;
 
 	// Use this for initialization
 	void Start ()
@@ -35,6 +36,36 @@ public class CentralHexagonController : MonoBehaviour
         m_mesh.vertices = m_vertices;
         m_mesh.SetIndices(m_indices, MeshTopology.Triangles, 0);
         GetComponent<MeshFilter>().mesh = m_mesh;
+
+        // MASK
+        GameObject mask = new GameObject();
+        mask.name = "Mask";
+        mask.hideFlags = HideFlags.DontSave;
+        MeshFilter meshFilter = mask.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = mask.AddComponent<MeshRenderer>();
+        Mesh mesh = new Mesh();
+        int[] indices = new int[18];
+        Vector3[] vertices = new Vector3[7];
+
+        vertices[0] = new Vector3();
+
+        float angleStep = Mathf.PI * 2.0f / 6.0f;
+        for (int i = 0; i < 6; ++i)
+        {
+            float angle = Mathf.PI * 0.5f + i * angleStep;
+            float radius = hexagonControllerPrefab.GetBaseRadius() + hexagonControllerPrefab.channelWidth;
+            vertices[i + 1] = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, transform.position.z + 0.1f);
+
+            indices[i * 3 + 0] = 0;
+            indices[i * 3 + 1] = (i + 2);
+            indices[i * 3 + 2] = (i + 1);
+        }
+        indices[16] = 1;
+
+        mesh.vertices = vertices;
+        mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+        meshFilter.mesh = mesh;
+        meshRenderer.material = maskMaterial;
     }
 	
 	// Update is called once per frame
