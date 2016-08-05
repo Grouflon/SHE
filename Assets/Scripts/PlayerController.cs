@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     public Material tokenMaterial;
     public InputController input;
     public HexagonController hexagonControllerPrefab;
+    public GameObject tokenPrefab;
     public int offset = 0;
     public float level = 1.0f;
     public float z = -0.06f;
@@ -46,10 +47,15 @@ public class PlayerController : MonoBehaviour
 	void Start ()
     {
         m_currentLevel = (int)level;
-        m_tokenTemplate = new GameObject();
+        m_tokenTemplate = Instantiate(tokenPrefab);
         m_tokenTemplate.name = "Token";
         MeshFilter meshFilter = m_tokenTemplate.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = m_tokenTemplate.AddComponent<MeshRenderer>();
+        TrailRenderer trailRenderer = m_tokenTemplate.GetComponent<TrailRenderer>();
+        //trailRenderer.material = tokenMaterial;
+        trailRenderer.startWidth = hexagonControllerPrefab.channelWidth;
+        trailRenderer.endWidth = 0.0f;//hexagonControllerPrefab.channelWidth;
+
         Mesh mesh = new Mesh();
         int[] indices = new int[18];
         Vector3[] vertices = new Vector3[7];
