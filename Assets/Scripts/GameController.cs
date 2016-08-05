@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using System.Collections.Generic;
 
 public class GameController : MonoBehaviour
 {
@@ -15,6 +15,11 @@ public class GameController : MonoBehaviour
     public int startLevel = 2;
     public float phaseTime = 3.0f;
     public int beats = 7;
+
+    // Difficulty
+    public float phaseMultiplier = 0.96f;
+    public int PhaseMultiplierRythm = 1;
+    public int tokenAdditionRythm = 10;
 
     public float eyeMaxSize = 1.1f;
     public float eyeMinSize = 0.3f;
@@ -134,15 +139,7 @@ public class GameController : MonoBehaviour
             }
 
             ++m_score;
-
-            /*for (int i = 0; i < 6; ++i)
-            {
-                if (!m_tokens[i])
-                    continue;
-
-                Level level = levelController.GetLevel(levelController.GetCurrentLevel() + (int)m_tokens[i].level);
-                passing[i] = level.GetDoor(m_tokens[i].GetPosition());
-            }*/
+            UpdateDifficuty();
         }
 
         float modTime = m_timer % phaseTime;
@@ -163,12 +160,42 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            SetEyeSize(Mathf.Lerp(eyeMaxSize, eyeMinSize, Ease.QuadOut(modModTime / beatTime)) * pulseMod);
+            SetEyeSize(Mathf.Lerp(eyeMaxSize, eyeMinSize, Ease.QuintOut(modModTime / beatTime)) * pulseMod);
         }
 
         m_timer += Time.deltaTime;
         scoreText.text = m_score.ToString();
 	}
+
+    void UpdateDifficuty()
+    {
+        if (m_score % PhaseMultiplierRythm == 0)
+        {
+            phaseTime *= phaseMultiplier;
+        }
+
+        if (m_score % tokenAdditionRythm == 0)
+        {
+            List<int> availableSlots = new List<int>();
+            for (int i = 0; i < 6; ++i)
+            {
+                if (!m_tokens[i])
+                    availableSlots.Add(i);
+            }
+
+            if (availableSlots.Count > 0)
+            {
+                int i = Random.Range(0, availableSlots.Count - 1);
+                int slot = availableSlots[i];
+                
+                m_tokens[slot] = (PlayerController)Instantiate(playerControllerPrefab, Vector3.zero, Quaternion.identity);
+                m_tokens[slot].offset = slot;
+                m_tokens[slot].level = startLevel;
+                m_tokens[slot].input = input;
+                m_tokens[slot].transitionTime = phaseTime / beats;
+            }
+        }
+    }
 
     void SetEyeSize(float _size)
     {

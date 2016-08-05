@@ -124,11 +124,11 @@ public class LevelController : MonoBehaviour {
                 {
                     if (transitionSign > 0.0f)
                     {
-                        analogLevel = Mathf.Lerp(10.0f, -1.0f, Ease.QuadOut(t));
+                        analogLevel = Mathf.Lerp(10.0f, -1.0f, Ease.QuintOut(t));
                     }
                     else
                     {
-                        analogLevel = Mathf.Lerp(-1.0f, 10.0f, Ease.QuadOut(t));
+                        analogLevel = Mathf.Lerp(-1.0f, 10.0f, Ease.QuintOut(t));
                     }
                     controller.level = analogLevel + i;
                 }

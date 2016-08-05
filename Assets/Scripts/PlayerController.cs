@@ -74,8 +74,10 @@ public class PlayerController : MonoBehaviour
         meshRenderer.material = tokenMaterial;
 
         m_token = GameObject.Instantiate(m_tokenTemplate);
-        m_tokenPosition = offset;
-        m_tokenWantedPosition = offset;
+        int position = 0;
+        input.GetPosition(ref position);
+        m_tokenPosition = (offset + position) % 6;
+        m_tokenWantedPosition = m_tokenPosition;
 
         m_tokenTemplate.hideFlags = HideFlags.HideInHierarchy;
         m_tokenTemplate.SetActive(false);
@@ -119,13 +121,13 @@ public class PlayerController : MonoBehaviour
             {
                 case State.Advancing:
                     {
-                        level = Mathf.Lerp(m_currentLevel, m_currentLevel + 1, Ease.QuadOut(m_stateTimer / transitionTime));
+                        level = Mathf.Lerp(m_currentLevel, m_currentLevel + 1, Ease.QuintOut(m_stateTimer / transitionTime));
                     }
                     break;
 
                 case State.GoingBack:
                     {
-                        level = Mathf.Lerp(m_currentLevel, m_currentLevel - 1, Ease.QuadOut(m_stateTimer / transitionTime));
+                        level = Mathf.Lerp(m_currentLevel, m_currentLevel - 1, Ease.QuintOut(m_stateTimer / transitionTime));
                     }
                     break;
 
