@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
 
     public float transitionTime = 1.0f;
     public float horizontalTransitionTime = 0.1f;
+    public float spawningTime = 0.2f;
 
     public int GetPosition()
     {
@@ -78,6 +79,7 @@ public class PlayerController : MonoBehaviour
         input.GetPosition(ref position);
         m_tokenPosition = (offset + position) % 6;
         m_tokenWantedPosition = m_tokenPosition;
+        m_token.transform.localScale = Vector3.zero;
 
         m_tokenTemplate.hideFlags = HideFlags.HideInHierarchy;
         m_tokenTemplate.SetActive(false);
@@ -86,6 +88,14 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        float scale = hexagonControllerPrefab.channelWidth * 0.5f;
+        if (m_spawningTimer < spawningTime)
+        {
+            scale = Mathf.Lerp(0.0f, hexagonControllerPrefab.channelWidth * 0.5f, Ease.QuadOut(m_spawningTimer / spawningTime));
+            m_spawningTimer += Time.deltaTime;
+        }
+        m_token.transform.localScale = new Vector3(scale, scale, scale);
+
         if (m_transitionTimer > horizontalTransitionTime)
         {
             m_transitionTimer = 0.0f;
@@ -104,8 +114,6 @@ public class PlayerController : MonoBehaviour
 
             m_state = State.Free;
         }
-
-        m_token.transform.localScale = new Vector3(hexagonControllerPrefab.channelWidth * 0.5f, hexagonControllerPrefab.channelWidth * 0.5f, hexagonControllerPrefab.channelWidth * 0.5f);
 
         if (m_state == State.Free)
         {
@@ -178,4 +186,6 @@ public class PlayerController : MonoBehaviour
     private State m_state = State.Free;
     private float m_stateTimer = 0.0f;
     private int m_currentLevel = 0;
+
+    private float m_spawningTimer = 0.0f;
 }
