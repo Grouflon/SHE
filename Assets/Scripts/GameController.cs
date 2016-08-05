@@ -159,11 +159,11 @@ public class GameController : MonoBehaviour
 
         if (currentBeat < beats - 1)
         {
-            SetEyeSize(Mathf.Lerp(eyeMinSize, eyeMaxSize, modTime / (beatTime * (beats - 1))) * pulseMod);
+            SetEyeSize(Mathf.Lerp(eyeMinSize, eyeMaxSize, Ease.QuadIn(modTime / (beatTime * (beats - 1)))) * pulseMod);
         }
         else
         {
-            SetEyeSize(Mathf.Lerp(eyeMaxSize, eyeMinSize, modModTime / beatTime) * pulseMod);
+            SetEyeSize(Mathf.Lerp(eyeMaxSize, eyeMinSize, Ease.QuadOut(modModTime / beatTime)) * pulseMod);
         }
 
         m_timer += Time.deltaTime;

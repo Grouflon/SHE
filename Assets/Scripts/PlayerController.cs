@@ -119,13 +119,13 @@ public class PlayerController : MonoBehaviour
             {
                 case State.Advancing:
                     {
-                        level = Mathf.Lerp(m_currentLevel, m_currentLevel + 1, m_stateTimer / transitionTime);
+                        level = Mathf.Lerp(m_currentLevel, m_currentLevel + 1, Ease.QuadOut(m_stateTimer / transitionTime));
                     }
                     break;
 
                 case State.GoingBack:
                     {
-                        level = Mathf.Lerp(m_currentLevel, m_currentLevel - 1, m_stateTimer / transitionTime);
+                        level = Mathf.Lerp(m_currentLevel, m_currentLevel - 1, Ease.QuadOut(m_stateTimer / transitionTime));
                     }
                     break;
 
@@ -153,7 +153,7 @@ public class PlayerController : MonoBehaviour
             float EndAngle = (float)(m_tokenPosition + increment)  * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
             Vector3 endPosition = new Vector3(Mathf.Cos(EndAngle) * radius, Mathf.Sin(EndAngle) * radius, z);
 
-            m_token.transform.position = Vector3.Lerp(startPosition, endPosition, m_transitionTimer / horizontalTransitionTime);
+            m_token.transform.position = Vector3.Lerp(startPosition, endPosition, Ease.QuadOut(m_transitionTimer / horizontalTransitionTime));
 
             m_transitionTimer += Time.deltaTime;
         }

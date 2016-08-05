@@ -110,17 +110,32 @@ public class LevelController : MonoBehaviour {
             float analogLevel = 0.0f;
             if (transitionSign > 0.0f)
             {
-                analogLevel = Mathf.Lerp(0.0f, -1.0f, t);
+                analogLevel = Mathf.Lerp(0.0f, -1.0f, Ease.QuadOut(t));
             }
             else
             {
-                analogLevel = Mathf.Lerp(-1.0f, 0.0f, t);
+                analogLevel = Mathf.Lerp(-1.0f, 0.0f, Ease.QuadOut(t));
             }
 
             for (int i = 0; i < m_hexagons.Count; ++i)
             {
                 HexagonController controller = m_hexagons[i].GetComponent<HexagonController>();
-                controller.level = analogLevel + i;
+                if (i == m_hexagons.Count - 1)
+                {
+                    if (transitionSign > 0.0f)
+                    {
+                        analogLevel = Mathf.Lerp(10.0f, -1.0f, Ease.QuadOut(t));
+                    }
+                    else
+                    {
+                        analogLevel = Mathf.Lerp(-1.0f, 10.0f, Ease.QuadOut(t));
+                    }
+                    controller.level = analogLevel + i;
+                }
+                else
+                {
+                    controller.level = analogLevel + i;
+                }
             }
 
             if (t >= 1.0f)
