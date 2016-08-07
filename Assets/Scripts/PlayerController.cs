@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public InputController input;
     public HexagonController hexagonControllerPrefab;
     public GameObject tokenPrefab;
+    public GameObject explosionPrefab;
     public int offset = 0;
     public float level = 1.0f;
     public float z = -0.06f;
@@ -43,9 +44,29 @@ public class PlayerController : MonoBehaviour
         return m_currentLevel;
     }
 
-	// Use this for initialization
-	void Start ()
+    public void Explode()
     {
+        if (m_explosion)
+            return;
+
+        m_token.SetActive(false);
+        GameObject go = (GameObject)Instantiate(explosionPrefab, m_token.transform.position + new Vector3(0.0f, 0.0f, -0.5f), Quaternion.identity);
+        m_explosion = go.GetComponent<ParticleEmitter>();
+    }
+
+    // Use this for initialization
+    void Start ()
+    {
+        if (m_explosion)
+        {
+            if (!m_explosion.emit)
+            {
+                Destroy(gameObject);
+                Destroy(m_explosion.gameObject);
+            }
+            return;
+        }
+
         m_currentLevel = (int)level;
         m_tokenTemplate = Instantiate(tokenPrefab);
         m_tokenTemplate.name = "Token";
@@ -89,6 +110,10 @@ public class PlayerController : MonoBehaviour
 
         m_tokenTemplate.hideFlags = HideFlags.HideInHierarchy;
         m_tokenTemplate.SetActive(false);
+
+        float radius = hexagonControllerPrefab.GetBaseRadius() + hexagonControllerPrefab.channelWidth * 0.5f + level * (hexagonControllerPrefab.hexWidth + hexagonControllerPrefab.channelWidth);
+        float a = (float)m_tokenPosition * (Mathf.PI * 2.0f / 6.0f) + Mathf.PI * 0.5f;
+        m_token.transform.position = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, z);
     }
 	
 	// Update is called once per frame
@@ -194,4 +219,5 @@ public class PlayerController : MonoBehaviour
     private int m_currentLevel = 0;
 
     private float m_spawningTimer = 0.0f;
+    private ParticleEmitter m_explosion = null;
 }

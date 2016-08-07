@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
     public PlayerController playerControllerPrefab;
     public GameObject eye;
     public Text scoreText;
+    public RawImage blackout;
 
     public bool[] tokens = new bool[6];
     public int startLevel = 2;
@@ -19,23 +20,18 @@ public class GameController : MonoBehaviour
     // Difficulty
     public float phaseMultiplier = 0.96f;
     public int PhaseMultiplierRythm = 1;
+    public int tokenAdditionStartAt = 10;
     public int tokenAdditionRythm = 10;
 
     public float eyeMaxSize = 1.1f;
     public float eyeMinSize = 0.3f;
     public float pulseSize = 1.1f;
     public float pulseTime = 0.2f;
+    public float blackoutTime = 0.5f;
 
-
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start ()
     {
-        /*HexagonController[] hc = FindObjectsOfType<HexagonController>();
-        foreach (HexagonController hex in hc)
-        {
-            Destroy(hex.gameObject);
-        }*/
-
         m_tokens = new PlayerController[6];
 
         levelController.transitionTime = phaseTime / beats;
@@ -59,11 +55,83 @@ public class GameController : MonoBehaviour
 
         SetEyeSize(eyeMinSize);
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    // Update is called once per frame
+    void Update()
     {
+        if (Time.timeSinceLevelLoad < blackoutTime)
+        {
+            Color c = blackout.color;
+            c.a = Mathf.Lerp(1f, 0f, Ease.QuadIn(Time.timeSinceLevelLoad / blackoutTime));
+            blackout.color = c;
+            return;
+        }
+
+        if (m_restartRequired)
+        {
+            float time = Time.timeSinceLevelLoad - m_restartRequestTime;
+            Color c = blackout.color;
+            c.a = Mathf.Lerp(0f, 1f, Ease.QuadIn(time / blackoutTime));
+            blackout.color = c;
+
+            if (time > blackoutTime)
+            {
+                // RESTART
+                SceneManager.LoadScene("Main");
+            }
+            return;
+        }
+
+        // RESTART REQUEST
+        if (m_gameOver)
+        {
+            bool everyTokenDestroyed = true;
+            for (int i = 0; i < 6; ++i)
+            {
+                if (m_tokens[i])
+                    everyTokenDestroyed = false;
+            }
+
+            if (everyTokenDestroyed && Input.anyKeyDown)
+            {
+                m_restartRequired = true;
+                m_restartRequestTime = Time.timeSinceLevelLoad;
+            }
+        }
+
         float beatTime = phaseTime / beats;
+
+        // DESTROY EVERY TOKEN
+        if (m_gameOver)
+        {
+            if (m_explosionTimer < 0.0f || m_explosionTimer > beatTime)
+            {
+                int lowerLevel = 99999;
+                int chosen = -1;
+                for (int i = 0; i < 6; ++i)
+                {
+                    if (m_tokens[i] && m_tokens[i].GetCurrentLevel() < lowerLevel)
+                    {
+                        lowerLevel = m_tokens[i].GetCurrentLevel();
+                        chosen = i;
+                    }
+                }
+
+                if (chosen >= 0)
+                {
+                    m_tokens[chosen].Explode();
+                    m_tokens[chosen] = null;
+                }
+                else
+                {
+                    // true end
+                }
+
+                if (m_explosionTimer > 0.0f)
+                    m_explosionTimer -= beatTime;
+            }
+            m_explosionTimer += Time.deltaTime;
+        }
 
         levelController.transitionTime = beatTime;
         for (int i = 0; i < 6; ++i)
@@ -74,7 +142,9 @@ public class GameController : MonoBehaviour
         if (m_timer > phaseTime)
         {
             m_timer -= phaseTime;
-            m_ready = true;
+
+            if (!m_gameOver)
+                m_ready = true;
         }
 
         int currentBeat = Mathf.FloorToInt(m_timer / beatTime);
@@ -122,7 +192,7 @@ public class GameController : MonoBehaviour
                         if (m_tokens[i].GetCurrentLevel() == 0)
                         {
                             // GAME OVER
-                            SceneManager.LoadScene("Main");
+                            m_gameOver = true;
                         }
                     }
                 }
@@ -138,8 +208,11 @@ public class GameController : MonoBehaviour
                 }
             }
 
-            ++m_score;
-            UpdateDifficuty();
+            if (!m_gameOver)
+            {
+                ++m_score;
+                UpdateDifficuty();
+            }
         }
 
         float modTime = m_timer % phaseTime;
@@ -165,6 +238,12 @@ public class GameController : MonoBehaviour
 
         m_timer += Time.deltaTime;
         scoreText.text = m_score.ToString();
+        while (scoreText.text.Length < 3)
+        {
+            string text = scoreText.text;
+            text = text.Insert(0, "0");
+            scoreText.text = text;
+        }
 	}
 
     void UpdateDifficuty()
@@ -174,7 +253,7 @@ public class GameController : MonoBehaviour
             phaseTime *= phaseMultiplier;
         }
 
-        if (m_score % tokenAdditionRythm == 0)
+        if (m_score == tokenAdditionStartAt || (m_score > tokenAdditionStartAt && (m_score - tokenAdditionStartAt) % tokenAdditionRythm == 0))
         {
             List<int> availableSlots = new List<int>();
             for (int i = 0; i < 6; ++i)
@@ -203,7 +282,11 @@ public class GameController : MonoBehaviour
     }
 
     private bool m_ready = true;
+    private bool m_gameOver = false;
     private float m_timer = 0.0f;
     private PlayerController[] m_tokens;
     private int m_score = 0;
+    private float m_explosionTimer = -0.0001f;
+    private bool m_restartRequired = false;
+    private float m_restartRequestTime = 0f;
 }
