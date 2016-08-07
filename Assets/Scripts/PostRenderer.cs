@@ -18,7 +18,6 @@ public class PostRenderer : MonoBehaviour {
     void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         Vector3 screenSize = Camera.current.ViewportToScreenPoint(new Vector3(1.1f, 1.1f, 0f));
-        Debug.Log(screenSize);
 
         mat.SetFloat("_GlobalTime", Time.time);
         mat.SetVector("_ScreenSize", new Vector4(screenSize.x, screenSize.y, 0f, 0f));

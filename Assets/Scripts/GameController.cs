@@ -8,8 +8,6 @@ public class GameController : MonoBehaviour
     public LevelController levelController;
     public InputController input;
     public PlayerController playerControllerPrefab;
-    public GameObject moveSoundPrefab;
-    public GameObject hexAdvanceSoundPrefab;
     public GameObject eye;
     public Text scoreText;
     public RawImage blackout;
@@ -30,6 +28,12 @@ public class GameController : MonoBehaviour
     public float pulseSize = 1.1f;
     public float pulseTime = 0.2f;
     public float blackoutTime = 0.5f;
+
+    // Music
+    public GameObject moveSoundPrefab;
+    public GameObject hexAdvanceSoundPrefab;
+    public GameObject musicPrefab;
+    public int musicPhaseCount = 4;
 
     // Use this for initialization
     void Start ()
@@ -160,9 +164,20 @@ public class GameController : MonoBehaviour
         {
             m_timer -= phaseTime;
 
+            ++m_musicCounter;
+
             if (!m_gameOver)
                 m_ready = true;
         }
+
+        if (m_musicCounter >= musicPhaseCount)
+        {
+            GameObject go = (GameObject)Instantiate(musicPrefab);
+            m_musicAudioSource = go.GetComponent<AudioSource>();
+            m_musicCounter = 0;
+        }
+
+        m_musicAudioSource.pitch = m_musicAudioSource.clip.length / (phaseTime * musicPhaseCount);
 
         int currentBeat = Mathf.FloorToInt(m_timer / beatTime);
 
@@ -307,4 +322,7 @@ public class GameController : MonoBehaviour
     private float m_explosionTimer = -0.0001f;
     private bool m_restartRequired = false;
     private float m_restartRequestTime = 0f;
+
+    private int m_musicCounter = 256;
+    private AudioSource m_musicAudioSource = null;
 }
