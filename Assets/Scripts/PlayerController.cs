@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     public HexagonController hexagonControllerPrefab;
     public GameObject tokenPrefab;
     public GameObject explosionPrefab;
+    public GameObject moveSoundPrefab;
+    public GameObject deathSoundPrefab;
     public int offset = 0;
     public float level = 1.0f;
     public float z = -0.06f;
@@ -52,6 +54,12 @@ public class PlayerController : MonoBehaviour
         m_token.SetActive(false);
         GameObject go = (GameObject)Instantiate(explosionPrefab, m_token.transform.position + new Vector3(0.0f, 0.0f, -0.5f), Quaternion.identity);
         m_explosion = go.GetComponent<ParticleEmitter>();
+        Instantiate(deathSoundPrefab);
+    }
+
+    public bool JustStartedMoving()
+    {
+        return m_justStartedMoving;
     }
 
     // Use this for initialization
@@ -119,6 +127,7 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        m_justStartedMoving = false;
         float scale = hexagonControllerPrefab.channelWidth * 0.5f;
         if (m_spawningTimer < spawningTime)
         {
@@ -185,6 +194,11 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            if (m_transitionTimer == 0.0f)
+            {
+                m_justStartedMoving = true;
+            }
+
             int delta = m_tokenWantedPosition - m_tokenPosition;
             int increment = (int)(Mathf.Abs(delta) > 3 ? Mathf.Sign(-delta) : Mathf.Sign(delta));
 
@@ -220,4 +234,5 @@ public class PlayerController : MonoBehaviour
 
     private float m_spawningTimer = 0.0f;
     private ParticleEmitter m_explosion = null;
+    private bool m_justStartedMoving = false;
 }

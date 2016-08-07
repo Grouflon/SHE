@@ -8,6 +8,8 @@ public class GameController : MonoBehaviour
     public LevelController levelController;
     public InputController input;
     public PlayerController playerControllerPrefab;
+    public GameObject moveSoundPrefab;
+    public GameObject hexAdvanceSoundPrefab;
     public GameObject eye;
     public Text scoreText;
     public RawImage blackout;
@@ -133,6 +135,21 @@ public class GameController : MonoBehaviour
             m_explosionTimer += Time.deltaTime;
         }
 
+        // MOVE SOUND
+        if (!m_gameOver)
+        {
+            bool needSound = false;
+
+            for (int i = 0; i < 6; i++)
+            {
+                if (m_tokens[i] && m_tokens[i].JustStartedMoving())
+                    needSound = true;
+            }
+
+            if (needSound)
+                Instantiate(moveSoundPrefab);
+        }
+
         levelController.transitionTime = beatTime;
         for (int i = 0; i < 6; ++i)
         {
@@ -179,6 +196,7 @@ public class GameController : MonoBehaviour
             if (nonePassing || oneExiting)
             {
                 levelController.NextLevel();
+                Instantiate(hexAdvanceSoundPrefab);
                 for (int i = 0; i < 6; ++i)
                 {
                     if (!m_tokens[i])
