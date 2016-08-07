@@ -32,6 +32,7 @@ public class GameController : MonoBehaviour
     // Music
     public GameObject moveSoundPrefab;
     public GameObject hexAdvanceSoundPrefab;
+    public GameObject newTokenSoundPrefab;
     public GameObject musicPrefab;
     public int musicPhaseCount = 4;
 
@@ -65,6 +66,11 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+
         if (Time.timeSinceLevelLoad < blackoutTime)
         {
             Color c = blackout.color;
@@ -305,6 +311,8 @@ public class GameController : MonoBehaviour
                 m_tokens[slot].level = startLevel;
                 m_tokens[slot].input = input;
                 m_tokens[slot].transitionTime = phaseTime / beats;
+
+                Instantiate(newTokenSoundPrefab);
             }
         }
     }
